@@ -26,7 +26,6 @@ const ParticleCanvas = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     let particles: Particle[];
-    const particleCount = 100;
     const connectDistance = 120;
 
     class Particle {
@@ -75,6 +74,8 @@ const ParticleCanvas = () => {
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      const particleCount = Math.floor((canvas.width * canvas.height) / 20000);
+      
       particles = [];
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
