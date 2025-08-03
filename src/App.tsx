@@ -75,7 +75,7 @@ const ParticleCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       const particleCount = Math.floor((canvas.width * canvas.height) / 20000);
-      
+
       particles = [];
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
@@ -191,61 +191,82 @@ const useAnimatedText = (targetText: string) => {
 
 const WaveCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isScrollingTimeoutRef = useRef<number | null>(null);
+  const waveSpeedRef = useRef(0.02);
+  const targetWaveSpeedRef = useRef(0.02);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const handleScroll = () => {
+      targetWaveSpeedRef.current = 0.08;
+      if (isScrollingTimeoutRef.current) {
+        window.clearTimeout(isScrollingTimeoutRef.current);
+      }
+      isScrollingTimeoutRef.current = window.setTimeout(() => {
+        targetWaveSpeedRef.current = 0.02;
+      }, 150);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     let frameId: number;
     let phase = 0;
-    const waveSpeed = 0.02;
     const waveAmplitude = 20;
     const waveFrequency = 0.01;
+    const initialBaselineY = 150;
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
-      canvas.height = 100;
+      canvas.height = 200;
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      waveSpeedRef.current += (targetWaveSpeedRef.current - waveSpeedRef.current) * 0.1;
+      
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollProgress = scrollHeight > 0 ? window.scrollY / scrollHeight : 0;
+      
+      const yOffset = scrollProgress * 100;
+      const currentBaselineY = initialBaselineY - yOffset;
+
       ctx.beginPath();
-      ctx.moveTo(0, canvas.height / 2);
-
+      
       for (let x = 0; x < canvas.width; x++) {
-        const y =
-          Math.sin(x * waveFrequency + phase) * waveAmplitude +
-          canvas.height / 2;
-        ctx.lineTo(x, y);
+        const y = Math.sin(x * waveFrequency + phase) * waveAmplitude + currentBaselineY;
+        if (x === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
-
-      ctx.strokeStyle = "white";
+      
+      ctx.strokeStyle = 'white';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      phase += waveSpeed;
+      phase += waveSpeedRef.current;
       frameId = requestAnimationFrame(animate);
     };
 
-    window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
     animate();
 
+    window.addEventListener('resize', resizeCanvas);
+
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', resizeCanvas);
+      if (isScrollingTimeoutRef.current) window.clearTimeout(isScrollingTimeoutRef.current);
       cancelAnimationFrame(frameId);
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed bottom-0 left-0 w-full h-[100px] pointer-events-none"
-    />
-  );
+  return <canvas ref={canvasRef} className="fixed bottom-0 left-0 w-full h-[200px] pointer-events-none z-10" />;
 };
 
 export default function App() {
@@ -316,8 +337,11 @@ export default function App() {
         </nav>
       </header>
 
-      <div className="fixed top-1/2 left-10 -translate-y-1/2 w-1/2 h-full flex items-center justify-end pointer-events-none z-0
-                      lg:top-1/2 lg:left-0 lg:-translate-y-1/2 lg:w-1/2 lg:h-full lg:items-center lg:justify-end">
+      <div
+        className="fixed flex pointer-events-none z-0 whitespace-nowrap
+                      top-35 right-6 -translate-y-1/2 w-1/2 h-full items-center justify-end 
+                      lg:top-1/2 lg:left-10 lg:-translate-y-1/2 lg:w-1/2 lg:h-full lg:items-center lg:justify-end"
+      >
         <h1
           className="text-[12vw] lg:text-[10rem] font-black uppercase break-words text-right text-transparent"
           style={{
