@@ -12,6 +12,7 @@ const SECTIONS: Section[] = [
 const ParticleCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const scrollTopRef = useRef(0);
+  const lastWidthRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,6 +79,7 @@ const ParticleCanvas = () => {
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
+      lastWidthRef.current = canvas.width;
     };
 
     const connect = () => {
@@ -115,7 +117,11 @@ const ParticleCanvas = () => {
     init();
     animate();
 
-    const handleResize = () => init();
+    const handleResize = () => {
+      if (window.innerWidth !== lastWidthRef.current) {
+        init();
+      }
+    };
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -309,7 +315,8 @@ export default function App() {
         </nav>
       </header>
 
-      <div className="fixed top-1/2 left-10 -translate-y-1/2 w-1/2 h-full flex items-center justify-end pointer-events-none z-0">
+      <div className="fixed top-1/2 left-10 -translate-y-1/2 w-1/2 h-full flex items-center justify-end pointer-events-none z-0
+                      lg:top-1/2 lg:left-0 lg:-translate-y-1/2 lg:w-1/2 lg:h-full lg:items-center lg:justify-end">
         <h1
           className="text-[12vw] lg:text-[10rem] font-black uppercase break-words text-right text-transparent"
           style={{
