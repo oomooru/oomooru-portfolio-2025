@@ -1,7 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 type Section = 'PROFILE' | 'SKILL SET' | 'TIMELINE' | 'PROJECT' | 'CONTACT';
 const SECTIONS: Section[] = ['PROFILE', 'SKILL SET', 'TIMELINE', 'PROJECT', 'CONTACT'];
+
+const PATH_DATA = {
+  PROFILE: "M50 30 C40 30 35 40 35 50 L35 60 C35 70 40 80 50 80 S65 70 65 60 L65 50 C65 40 60 30 50 30Z",
+  'SKILL SET': "M50,25 L55.9,42.5 L74.5,42.5 L60.2,54.2 L65.5,71.5 L50,60.5 L34.5,71.5 L39.8,54.2 L25.5,42.5 L44.1,42.5 Z",
+  TIMELINE: "M50 20 L50 50 L75 65 M50 10 C77.6 10 100 32.4 100 60 C100 87.6 77.6 110 50 110 C22.4 110 0 87.6 0 60 C0 32.4 22.4 10 50 10 Z",
+  PROJECT: "M30 20 L70 20 L70 80 L30 80 Z M40 30 L60 30 M40 40 L60 40 M40 50 L50 50",
+  CONTACT: "M15 25 L85 25 L85 75 L15 75 Z M15 25 L50 55 L85 25",
+};
+
+const MorphingSvgBackground = ({ activeSection }: { activeSection: Section }) => {
+  return (
+    <div className="fixed top-0 left-0 w-full h-full -z-10 opacity-10 pointer-events-none">
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <motion.path
+          d={PATH_DATA[activeSection]}
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          initial={{ d: PATH_DATA['PROFILE'] }}
+          animate={{ d: PATH_DATA[activeSection] }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+        />
+      </svg>
+    </div>
+  );
+};
 
 const useAnimatedText = (targetText: string) => {
   const [animatedText, setAnimatedText] = useState(targetText);
@@ -149,6 +176,8 @@ export default function App() {
 
   return (
     <div className="bg-black text-white min-h-screen font-sans select-none">
+      <MorphingSvgBackground activeSection={activeSection} />
+      
       <header className="fixed top-10 left-1/2 -translate-x-1/2 w-[95%] max-w-full z-50">
         <nav className="flex justify-between items-center bg-black/10 backdrop-blur-md border border-white/50 rounded-full pb-5 pt-4 pl-8 pr-8">
           <a href="#" className="flex items-center font-bold text-xl tracking-wider">OOMOORU</a>
